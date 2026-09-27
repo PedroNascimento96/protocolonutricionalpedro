@@ -1,670 +1,955 @@
-import { useState } from "react";
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#D42027">
+<title>Minha Dieta — Guilherme Carvalho</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:wght@600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--red:#D42027;--red-dk:#A01A1F;--red-lt:#FDF0F0;
+--char:#1A1A1A;--gray:#6B7280;--gray-lt:#F3F4F6;--white:#fff;
+--radius:14px;--shadow:0 2px 8px rgba(0,0,0,.08);
+--safe-b:env(safe-area-inset-bottom,0px);
+--safe-t:env(safe-area-inset-top,0px);
+}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--gray-lt);color:var(--char);
+padding-top:var(--safe-t);padding-bottom:calc(72px + var(--safe-b));
+-webkit-tap-highlight-color:transparent;line-height:1.5}
+h1,h2,h3{font-family:'Fraunces',serif}
 
-const BRAND = {
-  red: "#D42027",
-  redDark: "#A01A1F",
-  redLight: "#FDF0F0",
-  charcoal: "#1A1A1A",
-  gray: "#6B7280",
-  grayLight: "#F3F4F6",
-  grayMid: "#E5E7EB",
-  white: "#FFFFFF",
-};
+.header{background:var(--red);color:var(--white);text-align:center;
+padding:20px 16px 16px;position:sticky;top:0;z-index:100}
+.header h1{font-size:1.15rem;letter-spacing:.5px}
+.header p{font-size:.75rem;opacity:.85;margin-top:2px}
 
-const meals = [
-  {
-    id: "cafe",
-    label: "Café da Manhã",
-    icon: "☀️",
-    suggestion: "Pão com ovo gourmet",
-    items: [
-      {
-        main: "Pão de Forma Integral, 2 Fatias (50g)",
-        subs: ["Cuscuz de Milho Cozido (110g)", "Macaxeira Cozida (100g)", "Batata Doce Cozida (160g)", "Goma de Tapioca (40g)", "Batata Inglesa Cozida (240g)", "Inhame Cozido (125g)"],
-      },
-      {
-        main: "Ovo de Galinha Inteiro, 2 Unidades (90g)",
-        subs: ["Sardinha em Lata Drenada (45g)", "Peito de Frango Sem Pele Grelhado (85g)", "Carne Bovina Cozida/Grelhada Magra (60g)", "Carne Bovina Moída Patinho (85g)", "Lombo de Porco Assado (65g)", "Atum Sólido ao Natural (100g)"],
-      },
-      {
-        main: "Queijo Muçarela, 1 Fatia (20g)",
-        subs: ["Requeijão Cremoso Light (30g)", "Queijo Cottage (70g)", "Creme de Ricota Light (40g)", "Leite de Vaca Desnatado (185g)", "Iogurte Natural Desnatado (175g)", "Leite em Pó Desnatado (15g)"],
-      },
-      { main: "Fruta (Anexo 1), 1 Porção", subs: [] },
-      {
-        main: "Farelo de Aveia (Oat Bran Quaker), 2 Col. sopa (20g)",
-        subs: ["Granola Comum (9g)", "Semente de Chia (8g)", "Semente de Abóbora (6g)", "Semente de Girassol (5g)"],
-      },
-    ],
-  },
-  {
-    id: "almoco",
-    label: "Almoço",
-    icon: "🍽️",
-    suggestion: "Prato completo com legumes coloridos",
-    items: [
-      {
-        main: "Arroz Branco Cozido, 2 Col. servir (110g)",
-        subs: ["Batata Inglesa Cozida (270g)", "Abóbora Cozida (290g)", "Arroz Integral Cozido (110g)", "Macarrão Cozido (85g)"],
-      },
-      {
-        main: "Peito de Frango Sem Pele Cozido, 1.5 Filé (150g)",
-        subs: ["Peito de Frango Cru (205g)", "Carne Bovina Magra (110g)", "Carne Bovina Crua (180g)", "Peixe Assado/Grelhado (205g)", "Lombo de Porco Assado (115g)", "Bife de Fígado Grelhado (105g)"],
-      },
-      {
-        main: "Feijão Cozido, 6 Col. sopa (102g)",
-        subs: ["Grão de Bico Cozido (65g)", "Ervilha em Vagem Cozida (115g)"],
-      },
-      { main: "Legumes e Verduras (Anexo 2), 1 Porção (150g)", subs: [] },
-      { main: "Fruta rica em Vitamina C (Anexo 1), 1 Porção", subs: [] },
-      {
-        main: "Doce de Leite Industrializado, 1 Col. sopa (20g)",
-        subs: ["Leite Condensado Semidesnatado (20g)"],
-      },
-    ],
-  },
-  {
-    id: "lanche1",
-    label: "Lanche da Tarde",
-    icon: "🥤",
-    suggestion: "Opção 1 — Iogurte com frutas e castanhas",
-    items: [
-      { main: "Fruta (Anexo 1), 2 Porções", subs: [] },
-      {
-        main: "Iogurte Natural, 1 Pote 170ml (170g)",
-        subs: ["Leite em Pó Integral (20g)", "Leite de Vaca Integral (170g)", "Iogurte Orgânico Qualquer Sabor (105g)"],
-      },
-      {
-        main: "Castanha de Caju, 15 Unidades (37,5g)",
-        subs: ["Pasta de Amendoim POWER1ONE (35g)", "Nozes (30g)", "Amêndoa Crua (35g)", "Castanha-do-Pará, 8 Un. (32g)"],
-      },
-      { main: "Whey Protein Concentrado (30g)", subs: [] },
-    ],
-  },
-  {
-    id: "lanche2",
-    label: "Lanche da Tarde (Op. 2)",
-    icon: "🥪",
-    suggestion: "Sanduíche de Atum",
-    items: [
-      {
-        main: "Pão de Forma Integral, 2 Fatias (50g)",
-        subs: ["Rap10 Fit (50g)", "Goma de Tapioca (40g)", "Pão Francês (40g)", "Batata Inglesa Cozida (240g)", "Batata Doce Cozida (160g)", "Arroz Branco Cozido (95g)"],
-      },
-      {
-        main: "Filé de Atum em Azeite de Oliva (80g)",
-        subs: ["Frango Desfiado Peito (100g)", "Carne Bovina Moída Patinho (100g)", "Salmão Sem Pele Grelhado (65g)", "Lombo de Porco Assado (75g)", "Proteína de Soja Texturizada (85g)", "Carne Bovina Magra (75g)"],
-      },
-      {
-        main: "Requeijão Cremoso (30g)",
-        subs: ["Queijo Cottage (85g)", "Creme de Ricota Light (50g)", "Queijo Muçarela (20g)", "Queijo Minas Frescal Orgânico (30g)", "Iogurte Natural Desnatado (215g)", "Queijo de Coalho (20g)"],
-      },
-      { main: "Alface, Tomate, Cenoura Ralada à vontade", subs: [] },
-      { main: "Fruta (Anexo 1), 2 Porções", subs: [] },
-    ],
-  },
-  {
-    id: "jantar1",
-    label: "Jantar",
-    icon: "🌙",
-    suggestion: "Jantar Nordestino Tradicional",
-    items: [
-      {
-        main: "Cuscuz de Milho Cozido (110g)",
-        subs: ["Macaxeira Cozida (95g)", "Inhame Cozido (120g)", "Batata Inglesa Cozida (235g)", "Abóbora Cozida (255g)", "Batata Doce Cozida (160g)", "Arroz Branco Cozido (95g)"],
-      },
-      {
-        main: "Carne Bovina Moída Patinho Refogado (150g)",
-        subs: ["Peito de Frango Sem Pele Grelhado (150g)", "Carne Bovina Magra (110g)", "Atum Sólido ao Natural (180g)", "Peixe Assado/Grelhado (210g)", "Lombo de Porco Assado (115g)", "Bife de Fígado Grelhado (105g)"],
-      },
-      { main: "Legumes e Verduras (Anexo 2), 1 Porção (150g)", subs: [] },
-    ],
-  },
-  {
-    id: "jantar2",
-    label: "Jantar (Op. 2)",
-    icon: "🍔",
-    suggestion: "Hambúrguer Caseiro",
-    items: [
-      { main: "Pão Francês, 1 Unidade (50g)", subs: [] },
-      {
-        main: "Carne Bovina Moída Patinho Refogado (130g)",
-        subs: ["Peito de Frango Cru (175g)", "Peito de Frango Grelhado (130g)", "Carne Bovina Crua Magra (160g)"],
-      },
-      {
-        main: "Queijo Muçarela, 1 Fatia (20g)",
-        subs: ["Requeijão Cremoso Light (30g)", "Queijo de Coalho (15g)", "Queijo Minas Frescal Orgânico (25g)", "Queijo Cottage (70g)"],
-      },
-      { main: "Alface, Tomate e Cebola à vontade", subs: [] },
-    ],
-  },
-];
+.tab-content{display:none;padding:16px 16px 24px;max-width:640px;margin:0 auto}
+.tab-content.active{display:block}
 
-const goals = [
-  {
-    category: "Alimentação",
-    icon: "🥗",
-    frequency: "diária",
-    items: ["2 a 3 porções de vegetais por dia", "2 a 3 porções de frutas por dia", "Cozinhar mais em casa", "Comer sem distrações"],
-  },
-  {
-    category: "Exercícios",
-    icon: "💪",
-    frequency: "semanal",
-    items: ["Mínimo 8 mil passos por dia", "Musculação 3 a 6 vezes por semana"],
-  },
-  {
-    category: "Sono",
-    icon: "😴",
-    frequency: "diária",
-    items: ["Luz do sol ao acordar", "Sem celular 1h antes de dormir", "Sem café após 17h", "Luzes apagadas 2h antes de deitar"],
-  },
-  {
-    category: "Hidratação",
-    icon: "💧",
-    frequency: "diária",
-    items: ["Mínimo 2.5L de água por dia", "Priorizar frutas com bastante água"],
-  },
-  {
-    category: "Estresse",
-    icon: "🧘",
-    frequency: "diária",
-    items: ["Reservar tempo em local tranquilo", "Caminhada apreciando a paisagem", "Distanciar-se das redes sociais"],
-  },
-];
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--white);
+display:flex;border-top:1px solid #e5e7eb;z-index:200;
+padding-bottom:var(--safe-b)}
+.bottom-nav button{flex:1;display:flex;flex-direction:column;align-items:center;
+gap:2px;padding:8px 2px 6px;border:none;background:none;
+color:var(--gray);font-size:.6rem;font-family:'DM Sans',sans-serif;
+cursor:pointer;min-height:52px;transition:color .15s}
+.bottom-nav button.active{color:var(--red)}
+.bottom-nav button svg{width:22px;height:22px;flex-shrink:0}
 
-const supplements = [
-  {
-    name: "Whey Protein Concentrado",
-    dosage: "Conforme prescrição",
-    timing: "Conforme prescrição",
-    note: "Procurar com 2g a 6g de carboidrato por porção. Fugir de +10g de carb.",
-    brands: "Growth, Integralmedica, Max Titanium, Probiótica, Black Skull",
-  },
-  {
-    name: "Creatina Monoidratada",
-    dosage: "5g / dia",
-    timing: "Qualquer horário",
-    note: "Tomar todos os dias, inclusive dias sem treino.",
-    brands: "Growth, Max Titanium, Vitafor, Integralmedica",
-  },
-  {
-    name: "Cafeína",
-    dosage: "1 cápsula de 210mg",
-    timing: "40 a 60 min antes do exercício",
-    note: "Máximo 3x por semana. Evitar após as 16h. Evitar se ansioso(a).",
-    brands: "Growth, Max Titanium, Integral Médica, New Millen",
-  },
-];
+.card{background:var(--white);border-radius:var(--radius);padding:16px;
+margin-bottom:12px;box-shadow:var(--shadow)}
+.card h3{font-size:1rem;color:var(--red-dk);margin-bottom:8px}
 
-const fruits = [
-  { name: "Abacaxi", portion: "2 fatias médias (150g)", vitC: true, lowCal: true },
-  { name: "Acerola", portion: "21 unidades (250g)", vitC: true, lowCal: true },
-  { name: "Açaí (polpa)", portion: "½ copo médio (150g)", vitC: false, lowCal: false },
-  { name: "Banana", portion: "1 unidade média (70g)", vitC: false, lowCal: false },
-  { name: "Caju", portion: "2 unidades médias (185g)", vitC: true, lowCal: true },
-  { name: "Goiaba", portion: "1 unidade média (130g)", vitC: true, lowCal: false },
-  { name: "Kiwi", portion: "2 unidades médias (150g)", vitC: true, lowCal: true },
-  { name: "Laranja", portion: "1 unidade média (180g)", vitC: true, lowCal: true },
-  { name: "Maçã", portion: "1 unidade média (130g)", vitC: false, lowCal: true },
-  { name: "Mamão Formosa", portion: "1 fatia média (170g)", vitC: true, lowCal: true },
-  { name: "Mamão Papaia", portion: "½ unidade (150g)", vitC: true, lowCal: true },
-  { name: "Manga", portion: "1 unidade média (140g)", vitC: true, lowCal: false },
-  { name: "Melancia", portion: "1½ fatias (300g)", vitC: false, lowCal: true },
-  { name: "Melão", portion: "½ unidade média (300g)", vitC: false, lowCal: true },
-  { name: "Morango", portion: "10 unidades (200g)", vitC: true, lowCal: true },
-  { name: "Pêra", portion: "1 unidade (110g)", vitC: false, lowCal: true },
-  { name: "Tangerina", portion: "1 unidade média (135g)", vitC: true, lowCal: true },
-  { name: "Amora", portion: "50 unidades (200g)", vitC: false, lowCal: true },
-];
+.meal-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.meal-icon{width:40px;height:40px;background:var(--red-lt);border-radius:50%;
+display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+.meal-title{font-family:'Fraunces',serif;font-size:1rem;color:var(--char)}
+.meal-time{font-size:.7rem;color:var(--gray)}
 
-function MealCard({ item, index }) {
-  const [open, setOpen] = useState(false);
-  const hasSubs = item.subs.length > 0;
+.food-item{padding:10px 0;border-bottom:1px solid var(--gray-lt)}
+.food-item:last-child{border-bottom:none}
+.food-main{font-weight:600;font-size:.85rem;margin-bottom:4px}
+.food-subs{display:none;margin-top:6px;padding:8px;background:var(--gray-lt);
+border-radius:8px;font-size:.78rem;color:var(--gray)}
+.food-subs span{display:block;padding:3px 0;border-bottom:1px solid #e5e7eb}
+.food-subs span:last-child{border-bottom:none}
+.food-toggle{font-size:.72rem;color:var(--red);cursor:pointer;
+display:inline-flex;align-items:center;gap:4px;font-weight:500;
+padding:4px 0;border:none;background:none;font-family:'DM Sans',sans-serif}
 
-  return (
-    <div style={{
-      background: BRAND.white,
-      borderRadius: 12,
-      border: `1px solid ${BRAND.grayMid}`,
-      overflow: "hidden",
-      transition: "box-shadow 0.2s",
-    }}>
-      <button
-        onClick={() => hasSubs && setOpen(!open)}
-        style={{
-          width: "100%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "14px 16px",
-          background: "transparent",
-          border: "none",
-          cursor: hasSubs ? "pointer" : "default",
-          gap: 12,
-          textAlign: "left",
-          fontFamily: "inherit",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1 }}>
-          <span style={{
-            width: 28, height: 28, borderRadius: 8,
-            background: BRAND.redLight, color: BRAND.red,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 13, fontWeight: 700, flexShrink: 0,
-          }}>{index + 1}</span>
-          <span style={{ fontSize: 14, color: BRAND.charcoal, fontWeight: 500, lineHeight: 1.4 }}>
-            {item.main}
-          </span>
-        </div>
-        {hasSubs && (
-          <span style={{
-            fontSize: 11, color: BRAND.red, fontWeight: 600,
-            background: BRAND.redLight, padding: "4px 8px", borderRadius: 6,
-            whiteSpace: "nowrap", flexShrink: 0,
-            transform: open ? "none" : "none",
-          }}>
-            {open ? "fechar" : `${item.subs.length} opções`}
-          </span>
-        )}
-      </button>
-      {open && (
-        <div style={{
-          padding: "0 16px 14px 54px",
-          display: "flex", flexDirection: "column", gap: 6,
-        }}>
-          <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: 1.2, color: BRAND.gray, fontWeight: 600, marginBottom: 2 }}>
-            Substituições equivalentes
-          </div>
-          {item.subs.map((sub, i) => (
-            <div key={i} style={{
-              fontSize: 13, color: BRAND.charcoal, padding: "6px 10px",
-              background: BRAND.grayLight, borderRadius: 6,
-              display: "flex", alignItems: "center", gap: 8,
-            }}>
-              <span style={{ color: BRAND.gray }}>↳</span> {sub}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+.recipe{margin-top:10px;padding:10px;background:var(--red-lt);
+border-radius:8px;font-size:.78rem}
+.recipe strong{color:var(--red-dk)}
+
+.goal-cat{margin-bottom:16px}
+.goal-cat h3{font-size:.9rem;display:flex;align-items:center;gap:6px}
+.goal-badge{font-size:.6rem;background:var(--red-lt);color:var(--red);
+padding:2px 8px;border-radius:20px;font-weight:600;font-family:'DM Sans',sans-serif}
+.goal-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;
+border-bottom:1px solid var(--gray-lt)}
+.goal-item:last-child{border-bottom:none}
+.goal-check{width:22px;height:22px;border:2px solid #d1d5db;border-radius:6px;
+flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;
+transition:all .15s;margin-top:1px;font-size:.7rem}
+.goal-check.done{background:var(--red);border-color:var(--red);color:var(--white)}
+.goal-text{font-size:.82rem}
+
+.acc{margin-bottom:8px}
+.acc-btn{width:100%;text-align:left;padding:14px 16px;background:var(--white);
+border:none;border-radius:var(--radius);cursor:pointer;font-size:.88rem;
+font-weight:600;font-family:'DM Sans',sans-serif;color:var(--char);
+display:flex;justify-content:space-between;align-items:center;
+box-shadow:var(--shadow)}
+.acc-btn::after{content:'▸';transition:transform .2s;font-size:.8rem;color:var(--gray)}
+.acc.open .acc-btn::after{transform:rotate(90deg)}
+.acc-body{display:none;padding:12px 16px;background:var(--white);
+margin-top:-6px;border-radius:0 0 var(--radius) var(--radius);
+font-size:.8rem;line-height:1.6;color:var(--gray);box-shadow:var(--shadow)}
+.acc.open .acc-body{display:block}
+
+.supp-card{background:var(--white);border-radius:var(--radius);padding:16px;
+margin-bottom:10px;box-shadow:var(--shadow);border-left:4px solid var(--red)}
+.supp-name{font-weight:700;font-size:.9rem;color:var(--red-dk);margin-bottom:6px}
+.supp-detail{font-size:.78rem;color:var(--gray);margin-bottom:3px}
+.supp-warn{font-size:.75rem;color:#B45309;background:#FEF3C7;
+padding:6px 10px;border-radius:8px;margin-top:6px}
+
+.food-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.food-chip{background:var(--white);padding:10px;border-radius:10px;
+font-size:.78rem;box-shadow:var(--shadow)}
+.food-chip .fname{font-weight:600;margin-bottom:2px}
+.food-chip .fqty{font-size:.7rem;color:var(--gray)}
+.badge-row{display:flex;gap:4px;margin-top:4px;flex-wrap:wrap}
+.badge{font-size:.58rem;padding:1px 6px;border-radius:10px;font-weight:600}
+.badge-vitc{background:#DCFCE7;color:#166534}
+.badge-low{background:#FEF9C3;color:#854D0E}
+
+.shop-cat{margin-bottom:12px}
+.shop-cat-header{display:flex;justify-content:space-between;align-items:center;
+padding:10px 14px;background:var(--red);color:var(--white);
+border-radius:var(--radius) var(--radius) 0 0;font-size:.82rem;font-weight:600;
+cursor:pointer}
+.shop-items{background:var(--white);border-radius:0 0 var(--radius) var(--radius);
+box-shadow:var(--shadow);overflow:hidden}
+.shop-item{display:flex;align-items:center;gap:10px;padding:10px 14px;
+border-bottom:1px solid var(--gray-lt);font-size:.82rem}
+.shop-item:last-child{border-bottom:none}
+.shop-item input[type=checkbox]{width:20px;height:20px;accent-color:var(--red);
+flex-shrink:0;cursor:pointer}
+.shop-item.checked span{text-decoration:line-through;opacity:.5}
+
+.progress-bar{margin:16px 0 20px;background:var(--white);border-radius:var(--radius);
+padding:14px;box-shadow:var(--shadow);text-align:center}
+.progress-bar .pbar{height:8px;background:#e5e7eb;border-radius:4px;
+margin-top:8px;overflow:hidden}
+.progress-bar .pfill{height:100%;background:var(--red);border-radius:4px;
+transition:width .3s}
+.progress-bar .ptxt{font-size:.8rem;font-weight:600;color:var(--char)}
+
+.shop-actions{display:flex;gap:10px;margin-bottom:16px}
+.shop-actions button{flex:1;padding:14px 12px;border:none;border-radius:var(--radius);
+font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;
+cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+box-shadow:var(--shadow);transition:transform .1s}
+.shop-actions button:active{transform:scale(.97)}
+.btn-whatsapp{background:#25D366;color:var(--white)}
+.btn-download{background:var(--white);color:var(--char);border:2px solid #e5e7eb !important}
+.btn-copy{background:var(--red);color:var(--white)}
+
+.sec-title{font-family:'Fraunces',serif;font-size:1.1rem;color:var(--char);
+margin:20px 0 12px;padding-bottom:6px;border-bottom:2px solid var(--red-lt)}
+
+@media(min-width:640px){
+.bottom-nav{position:static;max-width:640px;margin:0 auto;border:none;
+border-bottom:1px solid #e5e7eb;padding-bottom:0}
+body{padding-bottom:0}
+.food-grid{grid-template-columns:repeat(3,1fr)}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+<h1>🍽️ Minha Dieta</h1>
+<p>Guilherme Carvalho · Nutrição Inteligente</p>
+</div>
+
+<nav class="bottom-nav" id="nav">
+<button class="active" onclick="switchTab('refeicoes',this)">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h18M5 7v10a2 2 0 002 2h10a2 2 0 002-2V7M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+Refeições
+</button>
+<button onclick="switchTab('metas',this)">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+Metas
+</button>
+<button onclick="switchTab('dicas',this)">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+Dicas
+</button>
+<button onclick="switchTab('alimentos',this)">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15l-5-5 1.41-1.41L11 14.17l7.59-7.59L20 8l-9 9z"/></svg>
+Alimentos
+</button>
+<button onclick="switchTab('compras',this)">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+Compras
+</button>
+</nav>
+
+<!-- ==================== TAB: REFEIÇÕES ==================== -->
+<div id="refeicoes" class="tab-content active">
+
+<!-- CAFÉ DA MANHÃ -->
+<div class="card">
+<div class="meal-header">
+<div class="meal-icon">☕</div>
+<div><div class="meal-title">Café da Manhã</div><div class="meal-time">Ao acordar</div></div>
+</div>
+<div class="food-item">
+<div class="food-main">🍞 Pão de Forma Integral, 2 Fatias médias (50g)</div>
+<button class="food-toggle" onclick="toggleSubs(this)">Ver substituições ▾</button>
+<div class="food-subs">
+<span>Cuscuz de Milho Cozido (110g)</span>
+<span>Macaxeira, Cozido(a) (100g)</span>
+<span>Batata Doce Cozida (160g)</span>
+<span>Goma de Tapioca (40g)</span>
+<span>Batata Inglesa Cozida (240g)</span>
+<span>Inhame Cozido (125g)</span>
+</div>
+</div>
+<div class="food-item">
+<div class="food-main">🥚 Ovo de Galinha Inteiro, 2 Unidades (90g)</div>
+<button class="food-toggle" onclick="toggleSubs(this)">Ver substituições ▾</button>
+<div class="food-subs">
+<span>Sardinha em Lata (Drenada) (45g)</span>
+<span>Peito de Frango Sem Pele Grelhado (85g)</span>
+<span>Carne Bovina Cozida ou Grelhada — Corte Magro (60g)</span>
+<span>Carne Bovina Moída — Patinho Refogado (85g)</span>
+<span>Lombo de Porco Assado (65g)</span>
+<span>Atum Sólido ao Natural em Água (100g)</span>
+</div>
+</div>
+<div class="food-item">
+<div class="food-main">🧀 Queijo Muçarela, 1 Fatia (20g)</div>
+<button class="food-toggle" onclick="toggleSubs(this)">Ver substituições ▾</button>
+<div class="food-subs">
+<span>Requeijão Cremoso Light (30g)</span>
+<span>Queijo Cottage (70g)</span>
+<span>Creme de Ricota Light (40g)</span>
+<span>Leite de Vaca Desnatado (185g)</span>
+<span>Iogurte Natural Desnatado (175g)</span>
+<span>Leite em Pó Desnatado (15g)</span>
+</div>
+</div>
+<div class="food-item">
+<div class="food-main">🍎 Fruta (Anexo 1), 1 Porção</div>
+</div>
+<div class="food-item">
+<div class="food-main">🥣 Farelo de Aveia (Oat Bran Quaker®), 2 Col. sopa (20g)</div>
+<button class="food-toggle" onclick="toggleSubs(this)">Ver substituições ▾</button>
+<div class="food-subs">
+<span>Granola Comum (9g)</span>
+<span>Semente de Chia (8g)</span>
+<span>Semente de Abóbora (6g)</span>
+<span>Semente de Girassol (5g)</span>
+</div>
+</div>
+<div class="recipe">
+<strong>💡 Sugestão: Pão com Ovo Gourmet</strong><br>
+1. Aqueça frigideira, doure as fatias de pão.<br>
+2. Cozinhe os ovos (gema mole ou dura).<br>
+3. Monte: queijo sobre o pão, tomates cereja, ovos por cima.<br>
+4. Tempere com sal, pimenta e orégano. Cubra para derreter o queijo.
+</div>
+</div>
+
+<!-- ALMOÇO -->
+<div class="card">
+<div class="meal-header">
+<div class="meal-icon">🍚</div>
+<div><div class="meal-title">Almoço</div><div class="meal-time">12h–13h</div></div>
+</div>
+<div class="food-item">
+<div class="food-main">🍚 Arroz Branco Cozido, 2 Col. servir cheias (110g)</div>
+<button class="food-toggle" onclick="toggleSubs(this)">Ver substituições ▾</button>
+<div class="food-subs">
+<span>Batata Inglesa Cozida, 9 Col. sopa cheias (270g)</span>
+<span>Abóbora cozida (290g)</span>
+<span>Arroz integral cozido, 5,5 Col. sopa cheias (110g)</span>
+<span>Macarrão Cozido, 1,5 Col. servir cheias (85g)</span>
+</div>
+</div>
+<div class="food-item">
+<div class="food-main">🍗 Peito de Frango Sem Pele Cozido, 1,5 Filé médio (150g)</div>
+<button class="food-toggle" onclick="toggleSubs(this)">Ver substituições ▾</button>
+<div class="food-subs">
+<span>Peito de Frango Sem Pele Cru (205g)</span>
+<span>Carne Bovina Cozida ou Grelhada — Corte Magro (110g)</span>
+<span>Carne Bovina Crua — Corte Magro, 1,5 Pedaço médio (180g)</span>
+<span>Peixe (Assado/Cozido/Grelhado), 1,5 Filé médio (205g)</span>
+<span>Lombo de porco assado (115g)</span>
+<span>Bife de fígado grelhado, 1 Filé médio (105g)</span>
+</div>
+</div>
+<div class="food-item">
+<div class="food-main">🫘 Feijão cozido, 6 Col. sopa cheias (102g)</div>
+<button class="food-toggle" onclick="toggleSubs(this)">Ver substituições ▾</button>
+<div class="food-subs">
+<span>Grão de bico cozido, 2,5 Col. sopa cheias (65g)</span>
+<span>Ervilha em vagem, Cozido(a) (115g)</span>
+</div>
+</div>
+<div class="food-item"><div class="food-main">🥗 Legumes e Verduras (Anexo 2), 1 Porção (150g)</div></div>
+<div class="food-item"><div class="food-main">🍊 Fruta rica em Vitamina C (Anexo 1), 1 Porção</div></div>
+<div class="food-item">
+<div class="food-main">🍮 Doce de Leite (Industrializado), 1 Col. sopa (20g)</div>
+<button class="food-toggle" onclick="toggleSubs(this)">Ver substituições ▾</button>
+<div class="food-subs"><span>Leite Condensado Semidesnatado (20g)</span></div>
+</div>
+<div class="recipe">
+<strong>💡 Dicas de preparo:</strong><br>
+1. Inicie com Legumes e Verduras para saciedade.<br>
+2. Preencha metade do prato com legumes de 3 cores.<br>
+3. Prepare purê com batata inglesa ou abóbora.<br>
+4. Varie as frutas ricas em vitamina C.<br>
+5. Alterne carnes na semana. Consuma fígado ao menos 1x/semana.
+</div>
+</div>
+
+<!-- LANCHE DA TARDE -->
+<div class="card">
+<div class="meal-header">
+<div class="meal-icon">🥜</div>
+<div><div class="meal-title">Lanche da Tarde</div><div class="meal-time">15h–16h</div></div>
+</div>
+<div class="food-item"><div class="food-main">🍎 Fruta (Anexo 1), 2 Porções</div></div>
+<div class="food-item">
+<div class="food-main">🥛 Iogurte Natural, 1 Pote (170ml/170g)</div>
+<button class="food-toggle" onclick="toggleSubs(this)">Ver substituições ▾</button>
+<div class="food-subs">
+<span>Leite em Pó Integral (20g)</span>
+<span>Leite de Vaca Integral (170g)</span>
+<span>Iogurte de Qualquer Sabor Orgânico (105g)</span>
+</div>
+</div>
+<div class="food-item">
+<div class="food-main">🥜 Castanha de Caju, 15 Unidades (37,5g)</div>
+<button class="food-toggle" onclick="toggleSubs(this)">Ver substituições ▾</button>
+<div class="food-subs">
+<span>Pasta de Amendoim (POWER1ONE) (35g)</span>
+<span>Nozes (30g)</span>
+<span>Amêndoa Crua (35g)</span>
+<span>Castanha-do-Pará, 8 Unidades (32g)</span>
+</div>
+</div>
+<div class="food-item"><div class="food-main">💪 Whey Protein Concentrado (30g)</div></div>
+</div>
+
+<!-- LANCHE DA TARDE OPÇÃO 2 -->
+<div class="card">
+<div class="meal-header">
+<div class="meal-icon">🥪</div>
+<div><div class="meal-title">Lanche da Tarde (Opção 2)</div><div class="meal-time">Alternativa</div></div>
+</div>
+<div class="food-item">
+<div class="food-main">🍞 Pão de Forma Integral, 2 Fatias médias (50g)</div>
+<button class="food-toggle" onclick="toggleSubs(this)">Ver substituições ▾</button>
+<div class="food-subs">
+<span>Rap10 Fit (Embalagem Azul) (50g)</span>
+<span>Goma de Tapioca (40g)</span>
+<span>Pão Francês (40g)</span>
+<span>Batata Inglesa Cozida (240g)</span>
+<span>Batata Doce Cozida (160g)</span>
+<span>Arroz Branco Cozido (95g)</span>
+</div>
+</div>
+<div class="food-item">
+<div class="food-main">🐟 Filé de Atum em Azeite de Oliva — Gomes (80g)</div>
+<button class="food-toggle" onclick="toggleSubs(this)">Ver substituições ▾</button>
+<div class="food-subs">
+<span>Frango Desfiado (Peito) (100g)</span>
+<span>Carne Bovina Moída — Patinho Refogado (100g)</span>
+<span>Salmão Sem Pele Grelhado (65g)</span>
+<span>Lombo de Porco Assado (75g)</span>
+<span>Proteína de Soja Texturizada, Cozida (85g)</span>
+<span>Carne Bovina Cozida ou Grelhada — Corte Magro (75g)</span>
+</div>
+</div>
+<div class="food-item">
+<div class="food-main">🧀 Requeijão Cremoso (30g)</div>
+<button class="food-toggle" onclick="toggleSubs(this)">Ver substituições ▾</button>
+<div class="food-subs">
+<span>Queijo Cottage (85g)</span>
+<span>Creme de Ricota Light (50g)</span>
+<span>Queijo Muçarela (20g)</span>
+<span>Queijo de Minas Frescal Orgânico (30g)</span>
+<span>Iogurte Natural Desnatado (215g)</span>
+<span>Queijo de Coalho (20g)</span>
+</div>
+</div>
+<div class="food-item"><div class="food-main">🥬 Alface, Tomate, Cenoura Ralada — à vontade</div></div>
+<div class="food-item"><div class="food-main">🍎 Fruta (Anexo 1), 2 Porções</div></div>
+<div class="recipe">
+<strong>💡 Sugestão: Sanduíche de Atum</strong><br>
+Empilhe: Pão, alface, tomate, cenoura ralada, atum, requeijão e pão.
+</div>
+</div>
+
+<!-- JANTAR -->
+<div class="card">
+<div class="meal-header">
+<div class="meal-icon">🌙</div>
+<div><div class="meal-title">Jantar</div><div class="meal-time">19h–20h</div></div>
+</div>
+<div class="food-item">
+<div class="food-main">🌽 Cuscuz de Milho Cozido (110g)</div>
+<button class="food-toggle" onclick="toggleSubs(this)">Ver substituições ▾</button>
+<div class="food-subs">
+<span>Macaxeira, Cozido(a) (95g)</span>
+<span>Inhame Cozido (120g)</span>
+<span>Batata Inglesa Cozida (235g)</span>
+<span>Abóbora Cozida (255g)</span>
+<span>Batata Doce Cozida (160g)</span>
+<span>Arroz Branco Cozido (95g)</span>
+</div>
+</div>
+<div class="food-item">
+<div class="food-main">🥩 Carne Bovina Moída — Patinho Refogado (150g)</div>
+<button class="food-toggle" onclick="toggleSubs(this)">Ver substituições ▾</button>
+<div class="food-subs">
+<span>Peito de Frango Sem Pele Grelhado (150g)</span>
+<span>Carne Bovina Cozida ou Grelhada — Corte Magro (110g)</span>
+<span>Atum Sólido ao Natural em Água (180g)</span>
+<span>Peixe (Assado/Cozido/Grelhado) (210g)</span>
+<span>Lombo de Porco Assado (115g)</span>
+<span>Bife de Fígado Grelhado (105g)</span>
+</div>
+</div>
+<div class="food-item"><div class="food-main">🥗 Legumes e Verduras (Anexo 2), 1 Porção (150g)</div></div>
+<div class="recipe">
+<strong>💡 Sugestão: Jantar Nordestino Tradicional</strong><br>
+Cuscuz com carne moída refogada e legumes variados.
+</div>
+</div>
+
+<!-- JANTAR OPÇÃO 2 -->
+<div class="card">
+<div class="meal-header">
+<div class="meal-icon">🍔</div>
+<div><div class="meal-title">Jantar (Opção 2)</div><div class="meal-time">Alternativa</div></div>
+</div>
+<div class="food-item"><div class="food-main">🥖 Pão Francês, 1 Unidade média (50g)</div></div>
+<div class="food-item">
+<div class="food-main">🥩 Carne Bovina Moída — Patinho Refogado (130g)</div>
+<button class="food-toggle" onclick="toggleSubs(this)">Ver substituições ▾</button>
+<div class="food-subs">
+<span>Peito de Frango Sem Pele Cru (175g)</span>
+<span>Peito de Frango Sem Pele Grelhado (130g)</span>
+<span>Carne Bovina Crua — Corte Magro (160g)</span>
+</div>
+</div>
+<div class="food-item">
+<div class="food-main">🧀 Queijo Muçarela, 1 Fatia (20g)</div>
+<button class="food-toggle" onclick="toggleSubs(this)">Ver substituições ▾</button>
+<div class="food-subs">
+<span>Requeijão Cremoso Light (30g)</span>
+<span>Queijo de Coalho (15g)</span>
+<span>Queijo de Minas Frescal Orgânico (25g)</span>
+<span>Queijo Cottage (70g)</span>
+</div>
+</div>
+<div class="food-item"><div class="food-main">🥬 Alface, Tomate e Cebola — à vontade</div></div>
+<div class="recipe">
+<strong>💡 Sugestão: Hambúrguer Caseiro</strong><br>
+1. Tempere a carne com sal e pimenta. Prepare alface, tomate e cebola.<br>
+2. Grelhe 4-5 min cada lado. Adicione muçarela para derreter.<br>
+3. Toste o pão. Monte com vegetais e ketchup/mostarda a gosto.
+</div>
+</div>
+
+</div>
+
+<!-- ==================== TAB: METAS ==================== -->
+<div id="metas" class="tab-content">
+
+<div class="card" style="text-align:center;margin-bottom:20px">
+<div style="font-size:2rem">🏆</div>
+<h2 style="font-size:1.1rem;margin:4px 0">Objetivo Principal</h2>
+<div style="font-size:1.3rem;font-family:'Fraunces',serif;color:var(--red)">Meia Maratona</div>
+</div>
+
+<div class="card goal-cat">
+<h3>🍽️ Alimentação <span class="goal-badge">diária</span></h3>
+<div class="goal-item"><div class="goal-check" onclick="toggleGoal(this)"></div><div class="goal-text">Comer 2 a 3 porções de vegetais por dia</div></div>
+<div class="goal-item"><div class="goal-check" onclick="toggleGoal(this)"></div><div class="goal-text">Comer 2 a 3 porções de frutas por dia</div></div>
+<div class="goal-item"><div class="goal-check" onclick="toggleGoal(this)"></div><div class="goal-text">Cozinhar mais em casa</div></div>
+<div class="goal-item"><div class="goal-check" onclick="toggleGoal(this)"></div><div class="goal-text">Comer sem distrações</div></div>
+</div>
+
+<div class="card goal-cat">
+<h3>🏃 Exercícios Físicos <span class="goal-badge">semanal</span></h3>
+<div class="goal-item"><div class="goal-check" onclick="toggleGoal(this)"></div><div class="goal-text">Realizar no mínimo 8 mil passos por dia</div></div>
+<div class="goal-item"><div class="goal-check" onclick="toggleGoal(this)"></div><div class="goal-text">Musculação 3 a 6 vezes por semana</div></div>
+</div>
+
+<div class="card goal-cat">
+<h3>😴 Sono <span class="goal-badge">diária</span></h3>
+<div class="goal-item"><div class="goal-check" onclick="toggleGoal(this)"></div><div class="goal-text">Expor-se a luz do sol assim que acordar</div></div>
+<div class="goal-item"><div class="goal-check" onclick="toggleGoal(this)"></div><div class="goal-text">Evitar usar celular 1h antes de deitar</div></div>
+<div class="goal-item"><div class="goal-check" onclick="toggleGoal(this)"></div><div class="goal-text">Não tomar café após 17h</div></div>
+<div class="goal-item"><div class="goal-check" onclick="toggleGoal(this)"></div><div class="goal-text">Apagar todas as luzes 2h antes de deitar</div></div>
+</div>
+
+<div class="card goal-cat">
+<h3>💧 Hidratação <span class="goal-badge">diária</span></h3>
+<div class="goal-item"><div class="goal-check" onclick="toggleGoal(this)"></div><div class="goal-text">Beber no mínimo 2,5L de água por dia</div></div>
+<div class="goal-item"><div class="goal-check" onclick="toggleGoal(this)"></div><div class="goal-text">Priorizar alimentos cozidos e frutas com bastante água (ex: Melancia)</div></div>
+</div>
+
+<div class="card goal-cat">
+<h3>🧘 Controle de Estresse <span class="goal-badge">diária</span></h3>
+<div class="goal-item"><div class="goal-check" onclick="toggleGoal(this)"></div><div class="goal-text">Reservar tempo para atividade em local tranquilo, longe de distrações. Uma simples caminhada apreciando a paisagem.</div></div>
+</div>
+
+</div>
+
+<!-- ==================== TAB: DICAS ==================== -->
+<div id="dicas" class="tab-content">
+
+<h2 class="sec-title">💊 Suplementação</h2>
+
+<div class="supp-card">
+<div class="supp-name">Whey Protein Concentrado</div>
+<div class="supp-detail">📋 Quantidade e momento conforme prescrição</div>
+<div class="supp-detail">🏷️ Marcas: Growth, Integralmedica, Max Titanium, Probiótica, Black Skull</div>
+<div class="supp-detail">📌 Procure Wheys com 2g a 6g de carboidratos por porção</div>
+<div class="supp-warn">⚠️ Fuja de Wheys com mais de 10g de carboidratos por porção</div>
+</div>
+
+<div class="supp-card">
+<div class="supp-name">Creatina Monoidratada</div>
+<div class="supp-detail">📋 Tomar 5g todos os dias, em qualquer horário</div>
+<div class="supp-detail">🏷️ Marcas: Growth, Max Titanium, Vitafor, Integralmedica</div>
+</div>
+
+<div class="supp-card">
+<div class="supp-name">Cafeína</div>
+<div class="supp-detail">📋 1 cápsula de 210mg, 40–60 min antes do exercício</div>
+<div class="supp-detail">🏷️ Marcas: Growth, Max Titanium, Integral Médica, New Millen</div>
+<div class="supp-warn">⚠️ Evitar se for ansioso(a). Evite após as 16h. Máx. 3x por semana.</div>
+</div>
+
+<h2 class="sec-title">📖 Orientações</h2>
+
+<div class="acc" onclick="toggleAcc(this)">
+<button class="acc-btn">🫒 Óleos para Cozinhar</button>
+<div class="acc-body">
+Use panelas e frigideiras antiaderentes para reduzir a quantidade de óleo.<br><br>
+Para grelhar, utilize o mínimo de azeite de oliva extravirgem ou suas versões virgem e refinada (custo mais baixo).<br><br>
+<strong>Evite ao máximo:</strong> manteiga, banha de porco e outros óleos de origem animal (ricos em gorduras saturadas).
+</div>
+</div>
+
+<div class="acc" onclick="toggleAcc(this)">
+<button class="acc-btn">🍽️ Refeições Fora do Plano</button>
+<div class="acc-body">
+Recomendo apenas 1 a 2 refeições fora do plano por semana.<br><br>
+Substitua uma refeição do plano pela refeição fora. Ex: se sair para comer hambúrguer à noite, substitua pelo jantar prescrito.<br><br>
+Se seu objetivo é estético, quanto mais frequente sai do cardápio, mais chances de flutuação calórica e atraso nos resultados.<br><br>
+<strong>Refrigerante:</strong> se quiser beber algo diferente, escolha refrigerante zero. Consumo moderado, mesmo na versão zero.
+</div>
+</div>
+
+<div class="acc" onclick="toggleAcc(this)">
+<button class="acc-btn">🧠 Como Controlar a Fome</button>
+<div class="acc-body">
+<strong>Coma com atenção plena!</strong><br><br>
+Coma devagar, mastigando e prestando atenção no sabor e textura, sem distrações como Computador, Redes Sociais ou TV.<br><br>
+Dessa forma, é possível identificar quando se está satisfeito e evitar o excesso de comida.
+</div>
+</div>
+
+<div class="acc" onclick="toggleAcc(this)">
+<button class="acc-btn">🍫 Consumo de Doces e Sobremesas</button>
+<div class="acc-body">
+Tente comer sempre após alguma refeição (evite comer de maneira isolada).<br><br>
+Prefira doces caseiros ou menos processados.<br><br>
+Perceba se está com <strong>fome</strong> ou com <strong>vontade de comer</strong>. Nunca mate a fome com um doce — faça uma refeição completa.<br><br>
+Treine sua percepção de fome e saciedade. Às vezes, uma pequena porção já é suficiente.
+</div>
+</div>
+
+<div class="acc" onclick="toggleAcc(this)">
+<button class="acc-btn">🍺 Bebida Alcoólica</button>
+<div class="acc-body">
+Reduza a quantidade total ao máximo.<br><br>
+Beba água intercalada com a bebida. Aumente a ingestão de água em 1-1,5L no dia seguinte.<br><br>
+Evite bebidas açucaradas, petiscos e frituras. Se possível, coma uma refeição completa (prato executivo).<br><br>
+Se beber muito, tome uma dose de proteína em pó com água ao chegar em casa.<br><br>
+<strong>Importante!</strong> O problema não é sair da rotina — é esquecer de voltar à rotina normal após a festa.
+</div>
+</div>
+
+<div class="acc" onclick="toggleAcc(this)">
+<button class="acc-btn">🍵 Recomendação de Chás</button>
+<div class="acc-body">
+<strong>Qualidade do sono:</strong> Camomila, erva-cidreira, passiflora, raiz valeriana.<br>
+<strong>Ansiedade:</strong> Erva de são joão (hipericão).<br><br>
+Encontre em loja de produtos naturais por um custo melhor.<br><br>
+<strong>Modos de preparo:</strong><br>
+<em>1. Infusão:</em> ferver a água, desligar, acrescentar o chá e tampar por 10min. Para pó, saquinho, folhas ou pétalas.<br>
+<em>2. Decocção:</em> adicionar raiz/casca à água e ferver por 10min, depois mais 5-10min em infusão. Para raízes e cascas.<br><br>
+Usar 1-3g de planta, sachê ou raiz em 200-300ml de água.
+</div>
+</div>
+
+<div class="acc" onclick="toggleAcc(this)">
+<button class="acc-btn">🥩 Recomendações de Carnes</button>
+<div class="acc-body">
+<strong>Cortes Bovinos Magros:</strong> Patinho, Lagarto, Coxão Mole, Maminha, Filé Mignon, Músculo, Coxão Duro.<br><br>
+<strong>Frango:</strong> Peito sem pele (proteína magra). Coxa sem pele e sem osso.<br><br>
+<strong>Peixe:</strong> Prefira filés. Enlatados: opte por versões em água. Recomendações: Tilápia, Atum em água, Sardinha, Pescada, Truta, Salmão, Linguado, Bacalhau, Merluza.<br><br>
+<strong>Preparo:</strong> grelhar, assar ou cozinhar. Evite frituras e molhos gordurosos. Use temperos naturais. Limite o sal.<br><br>
+<strong>Air Fryer:</strong> pese o alimento CRU antes de preparar — a perda de água impacta o peso final.
+</div>
+</div>
+
+<div class="acc" onclick="toggleAcc(this)">
+<button class="acc-btn">🥦 Dicas sobre Vegetais</button>
+<div class="acc-body">
+Escolha qualquer vegetal do Anexo 2, na quantidade do plano. Varie o prato!<br><br>
+Ex: 150g = 50g cenoura + 50g brócolis + 50g tomate.<br><br>
+<strong>Se não tem costume:</strong><br>
+• <strong>Preparo:</strong> cru, cozido, assado, airfryer, refogado.<br>
+• <strong>Com outros alimentos:</strong> pimentão recheado, brócolis gratinado, molho de tomate com vegetais.<br>
+• <strong>Caldos:</strong> bata os vegetais e faça um caldo.<br>
+• <strong>Purês:</strong> cenoura, beterraba, abóbora cabotian.<br>
+• <strong>Temperos:</strong> limão, sal, pimenta do reino.<br>
+• <strong>Sucos verdes:</strong> caseiros.
+</div>
+</div>
+
+</div>
+
+<!-- ==================== TAB: ALIMENTOS ==================== -->
+<div id="alimentos" class="tab-content">
+
+<h2 class="sec-title">🍎 Frutas — Anexo 1 <span style="font-size:.7rem;font-weight:400;color:var(--gray)">(80kcal/porção)</span></h2>
+
+<div class="food-grid">
+<div class="food-chip"><div class="fname">Abacaxi</div><div class="fqty">2 Fatias médias (150g)</div><div class="badge-row"><span class="badge badge-vitc">Vit C</span><span class="badge badge-low">Baixa Cal</span></div></div>
+<div class="food-chip"><div class="fname">Acerola</div><div class="fqty">21 Unidades (250g)</div><div class="badge-row"><span class="badge badge-vitc">Vit C</span><span class="badge badge-low">Baixa Cal</span></div></div>
+<div class="food-chip"><div class="fname">Açaí (polpa)</div><div class="fqty">1/2 Copo médio (150g)</div></div>
+<div class="food-chip"><div class="fname">Ameixa-preta seca</div><div class="fqty">6 Unid. médias (30g)</div></div>
+<div class="food-chip"><div class="fname">Ameixa-vermelha</div><div class="fqty">3 Unid. médias (125g)</div><div class="badge-row"><span class="badge badge-vitc">Vit C</span></div></div>
+<div class="food-chip"><div class="fname">Amora</div><div class="fqty">50 Unidades (200g)</div><div class="badge-row"><span class="badge badge-vitc">Vit C</span></div></div>
+<div class="food-chip"><div class="fname">Banana</div><div class="fqty">1 Unidade média (70g)</div></div>
+<div class="food-chip"><div class="fname">Caju</div><div class="fqty">2 Unid. médias (185g)</div><div class="badge-row"><span class="badge badge-vitc">Vit C</span><span class="badge badge-low">Baixa Cal</span></div></div>
+<div class="food-chip"><div class="fname">Caqui</div><div class="fqty">1 Unidade média (110g)</div></div>
+<div class="food-chip"><div class="fname">Coco (in natura)</div><div class="fqty">1 Pedaço peq. (15g)</div></div>
+<div class="food-chip"><div class="fname">Damasco seco</div><div class="fqty">4 Unidades (30g)</div></div>
+<div class="food-chip"><div class="fname">Fruta do Conde</div><div class="fqty">1½ Unid. M. (90g)</div></div>
+<div class="food-chip"><div class="fname">Goiaba</div><div class="fqty">1 Unidade média (130g)</div><div class="badge-row"><span class="badge badge-vitc">Vit C</span></div></div>
+<div class="food-chip"><div class="fname">Jabuticaba</div><div class="fqty">25 Unidades (125g)</div><div class="badge-row"><span class="badge badge-vitc">Vit C</span></div></div>
+<div class="food-chip"><div class="fname">Jaca</div><div class="fqty">7 Bagos (85g)</div></div>
+<div class="food-chip"><div class="fname">Kiwi</div><div class="fqty">2 Unid. médias (150g)</div><div class="badge-row"><span class="badge badge-vitc">Vit C</span><span class="badge badge-low">Baixa Cal</span></div></div>
+<div class="food-chip"><div class="fname">Laranja</div><div class="fqty">1 Unidade média (180g)</div><div class="badge-row"><span class="badge badge-vitc">Vit C</span><span class="badge badge-low">Baixa Cal</span></div></div>
+<div class="food-chip"><div class="fname">Maçã</div><div class="fqty">1 Unidade média (130g)</div><div class="badge-row"><span class="badge badge-vitc">Vit C</span></div></div>
+<div class="food-chip"><div class="fname">Mamão Formosa</div><div class="fqty">1 Fatia média (170g)</div><div class="badge-row"><span class="badge badge-vitc">Vit C</span><span class="badge badge-low">Baixa Cal</span></div></div>
+<div class="food-chip"><div class="fname">Mamão Papaia</div><div class="fqty">1/2 Unidade (150g)</div><div class="badge-row"><span class="badge badge-vitc">Vit C</span><span class="badge badge-low">Baixa Cal</span></div></div>
+<div class="food-chip"><div class="fname">Manga</div><div class="fqty">1 Unidade média (140g)</div><div class="badge-row"><span class="badge badge-vitc">Vit C</span></div></div>
+<div class="food-chip"><div class="fname">Maracujá</div><div class="fqty">2 Unid. médias (90g) suco puro</div></div>
+<div class="food-chip"><div class="fname">Melancia</div><div class="fqty">1½ Fatias médias (300g)</div><div class="badge-row"><span class="badge badge-vitc">Vit C</span></div></div>
+<div class="food-chip"><div class="fname">Melão</div><div class="fqty">1/2 Unid. média (300g)</div><div class="badge-row"><span class="badge badge-vitc">Vit C</span></div></div>
+<div class="food-chip"><div class="fname">Morango</div><div class="fqty">10 Unidades (200g)</div><div class="badge-row"><span class="badge badge-vitc">Vit C</span><span class="badge badge-low">Baixa Cal</span></div></div>
+<div class="food-chip"><div class="fname">Nectarina</div><div class="fqty">1 Unidade média (140g)</div><div class="badge-row"><span class="badge badge-vitc">Vit C</span></div></div>
+<div class="food-chip"><div class="fname">Pêra</div><div class="fqty">1 Unidade (110g)</div><div class="badge-row"><span class="badge badge-vitc">Vit C</span></div></div>
+<div class="food-chip"><div class="fname">Tangerina</div><div class="fqty">1 Unidade média (135g)</div><div class="badge-row"><span class="badge badge-vitc">Vit C</span><span class="badge badge-low">Baixa Cal</span></div></div>
+<div class="food-chip"><div class="fname">Uva</div><div class="fqty">17 Unid. médias (135g)</div></div>
+<div class="food-chip"><div class="fname">Uva passa</div><div class="fqty">1½ Col. sopa (27g)</div></div>
+<div class="food-chip"><div class="fname">Suco de Abacaxi</div><div class="fqty">200ml (suco puro)</div></div>
+<div class="food-chip"><div class="fname">Suco de Tangerina</div><div class="fqty">200ml (suco puro)</div></div>
+<div class="food-chip"><div class="fname">Salada de Laranja</div><div class="fqty">200ml (suco puro)</div></div>
+<div class="food-chip"><div class="fname">Salada de Frutas</div><div class="fqty">Laranja, banana, maçã, mamão — 3 Col. sopa cheias (115g)</div></div>
+</div>
+
+<h2 class="sec-title">🥦 Vegetais — Anexo 2</h2>
+
+<div class="food-grid">
+<div class="food-chip"><div class="fname">Abóbora cozida</div></div>
+<div class="food-chip"><div class="fname">Abobrinha</div></div>
+<div class="food-chip"><div class="fname">Acelga</div></div>
+<div class="food-chip"><div class="fname">Agrião</div></div>
+<div class="food-chip"><div class="fname">Alface</div></div>
+<div class="food-chip"><div class="fname">Berinjela cozida</div></div>
+<div class="food-chip"><div class="fname">Beterraba cozida</div></div>
+<div class="food-chip"><div class="fname">Brócolis cozido</div></div>
+<div class="food-chip"><div class="fname">Cenoura (cozida/crua)</div></div>
+<div class="food-chip"><div class="fname">Chuchu cozido</div></div>
+<div class="food-chip"><div class="fname">Couve flor cozida</div></div>
+<div class="food-chip"><div class="fname">Couve-manteiga</div></div>
+<div class="food-chip"><div class="fname">Espinafre</div></div>
+<div class="food-chip"><div class="fname">Manjericão</div></div>
+<div class="food-chip"><div class="fname">Pepino</div></div>
+<div class="food-chip"><div class="fname">Pimentão</div></div>
+<div class="food-chip"><div class="fname">Quiabo</div></div>
+<div class="food-chip"><div class="fname">Repolho</div></div>
+<div class="food-chip"><div class="fname">Rúcula</div></div>
+<div class="food-chip"><div class="fname">Tomate</div></div>
+</div>
+
+</div>
+
+<!-- ==================== TAB: COMPRAS ==================== -->
+<div id="compras" class="tab-content">
+
+<div class="shop-actions">
+<button class="btn-whatsapp" onclick="shareWhatsApp()">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+WhatsApp
+</button>
+<button class="btn-copy" onclick="copyList()">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+Copiar
+</button>
+<button class="btn-download" onclick="downloadList()">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+Baixar
+</button>
+</div>
+
+<div class="progress-bar">
+<div class="ptxt" id="shopProgress">0 de 0 itens</div>
+<div class="pbar"><div class="pfill" id="shopFill" style="width:0%"></div></div>
+</div>
+
+<div id="shopList">
+
+<div class="shop-cat">
+<div class="shop-cat-header">🥖 Carboidratos</div>
+<div class="shop-items">
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Pão de Forma Integral</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Pão Francês</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Cuscuz de Milho</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Arroz Branco</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Farelo de Aveia (Oat Bran Quaker®)</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Feijão</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Batata Inglesa</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Batata Doce</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Macaxeira</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Inhame</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Goma de Tapioca</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Macarrão</span></div>
+</div>
+</div>
+
+<div class="shop-cat">
+<div class="shop-cat-header">🥩 Proteínas</div>
+<div class="shop-items">
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Ovos de Galinha</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Peito de Frango Sem Pele</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Carne Bovina Moída (Patinho)</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Carne Bovina (Corte Magro)</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Lombo de Porco</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Filé de Atum (Gomes / em Azeite)</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Atum Sólido ao Natural (em Água)</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Sardinha em Lata</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Peixe (Filé — Tilápia/Salmão)</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Bife de Fígado</span></div>
+</div>
+</div>
+
+<div class="shop-cat">
+<div class="shop-cat-header">🧀 Laticínios</div>
+<div class="shop-items">
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Queijo Muçarela</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Requeijão Cremoso</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Queijo Cottage</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Iogurte Natural</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Leite de Vaca Integral</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Doce de Leite</span></div>
+</div>
+</div>
+
+<div class="shop-cat">
+<div class="shop-cat-header">🍎 Frutas</div>
+<div class="shop-items">
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Banana</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Maçã</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Laranja</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Mamão (Formosa ou Papaia)</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Morango</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Melancia</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Tangerina</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Goiaba</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Manga</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Abacaxi</span></div>
+</div>
+</div>
+
+<div class="shop-cat">
+<div class="shop-cat-header">🥦 Vegetais e Legumes</div>
+<div class="shop-items">
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Alface</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Tomate</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Cenoura</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Cebola</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Brócolis</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Abóbora</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Abobrinha</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Beterraba</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Couve-manteiga</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Pimentão</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Pepino</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Repolho</span></div>
+</div>
+</div>
+
+<div class="shop-cat">
+<div class="shop-cat-header">🥜 Oleaginosas e Sementes</div>
+<div class="shop-items">
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Castanha de Caju</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Pasta de Amendoim (POWER1ONE)</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Semente de Chia</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Semente de Abóbora</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Semente de Girassol</span></div>
+</div>
+</div>
+
+<div class="shop-cat">
+<div class="shop-cat-header">🫒 Temperos e Óleos</div>
+<div class="shop-items">
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Azeite de Oliva Extravirgem</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Sal</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Pimenta</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Orégano</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Ketchup / Mostarda</span></div>
+</div>
+</div>
+
+<div class="shop-cat">
+<div class="shop-cat-header">💪 Suplementos</div>
+<div class="shop-items">
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Whey Protein Concentrado</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Creatina Monoidratada (5g/dia)</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Cafeína 210mg (cápsulas)</span></div>
+</div>
+</div>
+
+<div class="shop-cat">
+<div class="shop-cat-header">🍵 Chás e Bebidas</div>
+<div class="shop-items">
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Camomila (chá)</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Erva-cidreira (chá)</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Passiflora (chá)</span></div>
+</div>
+</div>
+
+<div class="shop-cat">
+<div class="shop-cat-header">🏪 Outros</div>
+<div class="shop-items">
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Rap10 Fit (Embalagem Azul)</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Granola Comum</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Leite Condensado Semidesnatado</span></div>
+<div class="shop-item"><input type="checkbox" onchange="updateShop()"><span>Proteína de Soja Texturizada</span></div>
+</div>
+</div>
+
+</div>
+</div>
+
+<script>
+function switchTab(id,btn){
+document.querySelectorAll('.tab-content').forEach(function(t){t.classList.remove('active')});
+document.getElementById(id).classList.add('active');
+document.querySelectorAll('.bottom-nav button').forEach(function(b){b.classList.remove('active')});
+btn.classList.add('active');
+window.scrollTo({top:0});
+}
+function toggleSubs(btn){
+var subs=btn.nextElementSibling;
+var open=subs.style.display==='block';
+subs.style.display=open?'none':'block';
+btn.textContent=open?'Ver substituições ▾':'Ocultar substituições ▴';
+}
+function toggleGoal(el){
+el.classList.toggle('done');
+el.innerHTML=el.classList.contains('done')?'✓':'';
+}
+function toggleAcc(el){
+if(el.tagName==='BUTTON')el=el.parentElement;
+el.classList.toggle('open');
+}
+function updateShop(){
+var all=document.querySelectorAll('#shopList input[type=checkbox]');
+var checked=document.querySelectorAll('#shopList input[type=checkbox]:checked');
+all.forEach(function(cb){
+cb.closest('.shop-item').classList.toggle('checked',cb.checked);
+});
+var total=all.length,done=checked.length;
+document.getElementById('shopProgress').textContent=done+' de '+total+' itens';
+document.getElementById('shopFill').style.width=(total?Math.round(done/total*100):0)+'%';
+}
+updateShop();
+
+function buildListText(){
+var cats=document.querySelectorAll('.shop-cat');
+var lines=['🛒 *LISTA DE COMPRAS — Dieta*',''];
+cats.forEach(function(cat){
+var header=cat.querySelector('.shop-cat-header').textContent;
+lines.push(header);
+cat.querySelectorAll('.shop-item').forEach(function(item){
+var cb=item.querySelector('input');
+var name=item.querySelector('span').textContent;
+lines.push((cb.checked?'  ✅ ~~':'  ⬜ ')+name+(cb.checked?'~~':''));
+});
+lines.push('');
+});
+return lines.join('\n');
 }
 
-function FruitBadge({ fruit }) {
-  return (
-    <div style={{
-      padding: "8px 12px", borderRadius: 10,
-      background: BRAND.white, border: `1px solid ${BRAND.grayMid}`,
-      display: "flex", flexDirection: "column", gap: 4,
-      position: "relative", overflow: "hidden",
-    }}>
-      <div style={{ display: "flex", gap: 4, position: "absolute", top: 6, right: 6 }}>
-        {fruit.vitC && <span style={{ fontSize: 8, background: "#FEF3C7", color: "#92400E", padding: "2px 5px", borderRadius: 4, fontWeight: 600 }}>Vit C</span>}
-        {fruit.lowCal && <span style={{ fontSize: 8, background: "#DCFCE7", color: "#166534", padding: "2px 5px", borderRadius: 4, fontWeight: 600 }}>Low Cal</span>}
-      </div>
-      <span style={{ fontSize: 14, fontWeight: 600, color: BRAND.charcoal }}>{fruit.name}</span>
-      <span style={{ fontSize: 12, color: BRAND.gray }}>{fruit.portion}</span>
-    </div>
-  );
+function buildPlainText(){
+var cats=document.querySelectorAll('.shop-cat');
+var lines=['LISTA DE COMPRAS - Dieta',''];
+cats.forEach(function(cat){
+var header=cat.querySelector('.shop-cat-header').textContent.replace(/[^\w\sÀ-ú]/g,'').trim();
+lines.push(header.toUpperCase());
+cat.querySelectorAll('.shop-item').forEach(function(item){
+var cb=item.querySelector('input');
+var name=item.querySelector('span').textContent;
+lines.push((cb.checked?'[x] ':'[ ] ')+name);
+});
+lines.push('');
+});
+return lines.join('\n');
 }
 
-export default function App() {
-  const [activeTab, setActiveTab] = useState("refeicoes");
-  const [activeMeal, setActiveMeal] = useState("cafe");
-  const [checkedGoals, setCheckedGoals] = useState({});
-
-  const toggleGoal = (cat, idx) => {
-    const key = `${cat}-${idx}`;
-    setCheckedGoals(prev => ({ ...prev, [key]: !prev[key] }));
-  };
-
-  const currentMeal = meals.find(m => m.id === activeMeal);
-
-  const tabs = [
-    { id: "refeicoes", label: "Refeições", icon: "🍴" },
-    { id: "metas", label: "Metas", icon: "🎯" },
-    { id: "suplementos", label: "Suplementos", icon: "💊" },
-    { id: "frutas", label: "Frutas", icon: "🍎" },
-  ];
-
-  return (
-    <div style={{
-      fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif",
-      background: "#FAFAFA",
-      minHeight: "100vh",
-      color: BRAND.charcoal,
-    }}>
-      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet" />
-
-      {/* Header */}
-      <div style={{
-        background: BRAND.charcoal,
-        padding: "28px 20px 20px",
-        position: "relative",
-        overflow: "hidden",
-      }}>
-        <div style={{
-          position: "absolute", top: -40, right: -40,
-          width: 200, height: 200, borderRadius: "50%",
-          background: BRAND.red, opacity: 0.08,
-        }} />
-        <div style={{
-          position: "absolute", bottom: -60, left: -30,
-          width: 160, height: 160, borderRadius: "50%",
-          background: BRAND.red, opacity: 0.05,
-        }} />
-
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16, position: "relative" }}>
-          <div style={{
-            width: 42, height: 42, borderRadius: 10,
-            background: BRAND.red, display: "flex",
-            alignItems: "center", justifyContent: "center",
-            fontSize: 20, fontWeight: 800, color: BRAND.white,
-            fontFamily: "'Playfair Display', serif",
-          }}>G</div>
-          <div>
-            <div style={{ fontSize: 17, fontWeight: 700, color: BRAND.white, letterSpacing: -0.3 }}>
-              Guilherme Carvalho
-            </div>
-            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", letterSpacing: 3, textTransform: "uppercase", fontWeight: 500 }}>
-              Nutrição Inteligente
-            </div>
-          </div>
-        </div>
-
-        <div style={{ position: "relative" }}>
-          <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", fontWeight: 500 }}>
-            Protocolo alimentar para
-          </div>
-          <div style={{
-            fontSize: 26, fontWeight: 800, color: BRAND.white,
-            fontFamily: "'Playfair Display', serif",
-            lineHeight: 1.2, marginTop: 4,
-          }}>
-            João Pedro do Nascimento
-          </div>
-          <div style={{
-            display: "inline-flex", alignItems: "center", gap: 6,
-            marginTop: 10, padding: "6px 12px", borderRadius: 20,
-            background: "rgba(212,32,39,0.15)", border: "1px solid rgba(212,32,39,0.25)",
-          }}>
-            <span style={{ fontSize: 14 }}>🏆</span>
-            <span style={{ fontSize: 12, color: BRAND.red, fontWeight: 600 }}>
-              Objetivo: Meia Maratona
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Tabs */}
-      <div style={{
-        display: "flex", gap: 0, padding: "0",
-        background: BRAND.white,
-        borderBottom: `1px solid ${BRAND.grayMid}`,
-        position: "sticky", top: 0, zIndex: 10,
-      }}>
-        {tabs.map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            style={{
-              flex: 1, padding: "12px 4px", border: "none",
-              background: activeTab === tab.id ? BRAND.white : "transparent",
-              borderBottom: activeTab === tab.id ? `2.5px solid ${BRAND.red}` : "2.5px solid transparent",
-              cursor: "pointer",
-              display: "flex", flexDirection: "column", alignItems: "center", gap: 2,
-              transition: "all 0.2s",
-              fontFamily: "inherit",
-            }}
-          >
-            <span style={{ fontSize: 16 }}>{tab.icon}</span>
-            <span style={{
-              fontSize: 11, fontWeight: activeTab === tab.id ? 700 : 500,
-              color: activeTab === tab.id ? BRAND.red : BRAND.gray,
-            }}>{tab.label}</span>
-          </button>
-        ))}
-      </div>
-
-      {/* Content */}
-      <div style={{ padding: "16px", maxWidth: 600, margin: "0 auto" }}>
-
-        {/* REFEIÇÕES */}
-        {activeTab === "refeicoes" && (
-          <>
-            {/* Meal selector pills */}
-            <div style={{
-              display: "flex", gap: 6, overflowX: "auto",
-              paddingBottom: 12, marginBottom: 8,
-              scrollbarWidth: "none",
-            }}>
-              {meals.map(meal => (
-                <button
-                  key={meal.id}
-                  onClick={() => setActiveMeal(meal.id)}
-                  style={{
-                    padding: "8px 14px", borderRadius: 20,
-                    border: activeMeal === meal.id ? `2px solid ${BRAND.red}` : `1px solid ${BRAND.grayMid}`,
-                    background: activeMeal === meal.id ? BRAND.redLight : BRAND.white,
-                    cursor: "pointer",
-                    whiteSpace: "nowrap",
-                    fontSize: 12, fontWeight: activeMeal === meal.id ? 700 : 500,
-                    color: activeMeal === meal.id ? BRAND.red : BRAND.gray,
-                    display: "flex", alignItems: "center", gap: 6,
-                    transition: "all 0.2s",
-                    fontFamily: "inherit",
-                  }}
-                >
-                  <span>{meal.icon}</span>
-                  {meal.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Suggestion banner */}
-            <div style={{
-              background: `linear-gradient(135deg, ${BRAND.red}, ${BRAND.redDark})`,
-              borderRadius: 12, padding: "14px 16px",
-              marginBottom: 16, display: "flex", alignItems: "center", gap: 12,
-            }}>
-              <span style={{ fontSize: 28 }}>👨‍🍳</span>
-              <div>
-                <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", fontWeight: 600, textTransform: "uppercase", letterSpacing: 1 }}>
-                  Sugestão de preparo
-                </div>
-                <div style={{ fontSize: 15, color: BRAND.white, fontWeight: 700, marginTop: 2 }}>
-                  {currentMeal.suggestion}
-                </div>
-              </div>
-            </div>
-
-            {/* Meal items */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {currentMeal.items.map((item, i) => (
-                <MealCard key={i} item={item} index={i} />
-              ))}
-            </div>
-
-            <div style={{
-              marginTop: 16, padding: "12px 16px",
-              background: "#FFF7ED", borderRadius: 10,
-              border: "1px solid #FED7AA",
-              fontSize: 12, color: "#92400E", lineHeight: 1.5,
-            }}>
-              💡 <strong>Dica:</strong> Toque em "opções" para ver as substituições equivalentes de cada alimento. Você pode trocar livremente dentro do mesmo grupo.
-            </div>
-          </>
-        )}
-
-        {/* METAS */}
-        {activeTab === "metas" && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <div style={{
-              textAlign: "center", padding: "16px",
-              background: `linear-gradient(135deg, ${BRAND.red}, ${BRAND.redDark})`,
-              borderRadius: 14,
-            }}>
-              <div style={{ fontSize: 32 }}>🏆</div>
-              <div style={{ fontSize: 20, fontWeight: 800, color: BRAND.white, fontFamily: "'Playfair Display', serif", marginTop: 6 }}>
-                Meia Maratona
-              </div>
-              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", marginTop: 4 }}>Objetivo principal</div>
-            </div>
-
-            {goals.map((goal) => (
-              <div key={goal.category} style={{
-                background: BRAND.white, borderRadius: 12,
-                border: `1px solid ${BRAND.grayMid}`, overflow: "hidden",
-              }}>
-                <div style={{
-                  padding: "14px 16px",
-                  display: "flex", alignItems: "center", justifyContent: "space-between",
-                  borderBottom: `1px solid ${BRAND.grayMid}`,
-                }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <span style={{ fontSize: 22 }}>{goal.icon}</span>
-                    <span style={{ fontSize: 15, fontWeight: 700, color: BRAND.charcoal }}>{goal.category}</span>
-                  </div>
-                  <span style={{
-                    fontSize: 10, color: BRAND.gray, fontWeight: 600,
-                    background: BRAND.grayLight, padding: "3px 8px", borderRadius: 4,
-                    textTransform: "uppercase", letterSpacing: 0.5,
-                  }}>{goal.frequency}</span>
-                </div>
-                <div style={{ padding: "10px 16px", display: "flex", flexDirection: "column", gap: 2 }}>
-                  {goal.items.map((item, idx) => {
-                    const key = `${goal.category}-${idx}`;
-                    const checked = checkedGoals[key];
-                    return (
-                      <button
-                        key={idx}
-                        onClick={() => toggleGoal(goal.category, idx)}
-                        style={{
-                          display: "flex", alignItems: "center", gap: 10,
-                          padding: "10px 4px", background: "transparent",
-                          border: "none", cursor: "pointer", textAlign: "left",
-                          fontFamily: "inherit", width: "100%",
-                        }}
-                      >
-                        <div style={{
-                          width: 22, height: 22, borderRadius: 6, flexShrink: 0,
-                          border: checked ? `2px solid ${BRAND.red}` : `2px solid ${BRAND.grayMid}`,
-                          background: checked ? BRAND.red : "transparent",
-                          display: "flex", alignItems: "center", justifyContent: "center",
-                          transition: "all 0.2s",
-                        }}>
-                          {checked && <span style={{ color: BRAND.white, fontSize: 13, fontWeight: 700 }}>✓</span>}
-                        </div>
-                        <span style={{
-                          fontSize: 13, color: checked ? BRAND.gray : BRAND.charcoal,
-                          textDecoration: checked ? "line-through" : "none",
-                          fontWeight: 500, transition: "all 0.2s",
-                        }}>{item}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* SUPLEMENTOS */}
-        {activeTab === "suplementos" && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {supplements.map((sup) => (
-              <div key={sup.name} style={{
-                background: BRAND.white, borderRadius: 14,
-                border: `1px solid ${BRAND.grayMid}`,
-                overflow: "hidden",
-              }}>
-                <div style={{
-                  padding: "16px",
-                  borderBottom: `1px solid ${BRAND.grayMid}`,
-                  display: "flex", alignItems: "center", gap: 12,
-                }}>
-                  <div style={{
-                    width: 44, height: 44, borderRadius: 12,
-                    background: BRAND.redLight, display: "flex",
-                    alignItems: "center", justifyContent: "center",
-                    fontSize: 22,
-                  }}>💊</div>
-                  <div>
-                    <div style={{ fontSize: 16, fontWeight: 700, color: BRAND.charcoal }}>{sup.name}</div>
-                    <div style={{ fontSize: 12, color: BRAND.gray }}>{sup.brands}</div>
-                  </div>
-                </div>
-                <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
-                  <div style={{ display: "flex", gap: 8 }}>
-                    <div style={{
-                      flex: 1, padding: "10px 12px", borderRadius: 8,
-                      background: BRAND.grayLight,
-                    }}>
-                      <div style={{ fontSize: 10, color: BRAND.gray, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>Dosagem</div>
-                      <div style={{ fontSize: 14, fontWeight: 600, color: BRAND.charcoal, marginTop: 2 }}>{sup.dosage}</div>
-                    </div>
-                    <div style={{
-                      flex: 1, padding: "10px 12px", borderRadius: 8,
-                      background: BRAND.grayLight,
-                    }}>
-                      <div style={{ fontSize: 10, color: BRAND.gray, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>Quando</div>
-                      <div style={{ fontSize: 14, fontWeight: 600, color: BRAND.charcoal, marginTop: 2 }}>{sup.timing}</div>
-                    </div>
-                  </div>
-                  <div style={{
-                    padding: "10px 12px", borderRadius: 8,
-                    background: "#FFF7ED", border: "1px solid #FED7AA",
-                    fontSize: 12, color: "#92400E", lineHeight: 1.5,
-                  }}>
-                    ⚠️ {sup.note}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* FRUTAS */}
-        {activeTab === "frutas" && (
-          <>
-            <div style={{
-              padding: "12px 16px", borderRadius: 10,
-              background: BRAND.redLight, border: `1px solid ${BRAND.red}20`,
-              marginBottom: 14, fontSize: 13, color: BRAND.charcoal, lineHeight: 1.5,
-            }}>
-              Cada porção equivale a aproximadamente <strong>80 kcal</strong>. Escolha variando as opções diariamente.
-            </div>
-
-            <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
-              <span style={{ fontSize: 11, background: "#FEF3C7", color: "#92400E", padding: "4px 10px", borderRadius: 6, fontWeight: 600 }}>🟡 Rica em Vitamina C</span>
-              <span style={{ fontSize: 11, background: "#DCFCE7", color: "#166534", padding: "4px 10px", borderRadius: 6, fontWeight: 600 }}>🟢 Baixa caloria</span>
-            </div>
-
-            <div style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
-              gap: 8,
-            }}>
-              {fruits.map(f => <FruitBadge key={f.name} fruit={f} />)}
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Footer */}
-      <div style={{
-        padding: "24px 20px", marginTop: 24,
-        textAlign: "center", borderTop: `1px solid ${BRAND.grayMid}`,
-        background: BRAND.white,
-      }}>
-        <div style={{ fontSize: 11, color: BRAND.gray }}>
-          CRN 22286 · Atualizado em 14/09/2026
-        </div>
-        <div style={{ fontSize: 11, color: BRAND.gray, marginTop: 4 }}>
-          guilhermeprofessor.nutri@gmail.com · (79) 9 9649-4208
-        </div>
-      </div>
-    </div>
-  );
+function shareWhatsApp(){
+var text=buildListText();
+var url='https://api.whatsapp.com/send?text='+encodeURIComponent(text);
+window.open(url,'_blank');
 }
+
+function copyList(){
+var text=buildPlainText();
+if(navigator.clipboard){
+navigator.clipboard.writeText(text).then(function(){
+showToast('Lista copiada!');
+});
+}else{
+var ta=document.createElement('textarea');
+ta.value=text;document.body.appendChild(ta);
+ta.select();document.execCommand('copy');
+document.body.removeChild(ta);
+showToast('Lista copiada!');
+}
+}
+
+function downloadList(){
+var text=buildPlainText();
+var blob=new Blob([text],{type:'text/plain;charset=utf-8'});
+var a=document.createElement('a');
+a.href=URL.createObjectURL(blob);
+a.download='lista-compras-dieta.txt';
+a.click();
+URL.revokeObjectURL(a.href);
+}
+
+function showToast(msg){
+var t=document.createElement('div');
+t.textContent=msg;
+t.style.cssText='position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1A1A1A;color:#fff;padding:10px 24px;border-radius:20px;font-size:.85rem;z-index:999;font-family:DM Sans,sans-serif;box-shadow:0 4px 12px rgba(0,0,0,.2)';
+document.body.appendChild(t);
+setTimeout(function(){t.remove()},2000);
+}
+</script>
+
+</body>
+</html>
